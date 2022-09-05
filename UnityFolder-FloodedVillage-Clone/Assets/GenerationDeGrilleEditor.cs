@@ -24,5 +24,10 @@ public class GenerationDeGrilleEditor : Editor
         {
             generator.SupprGrid();
         }
+        
+        if (GUILayout.Button("Reaction"))
+        {
+            generator.React(generator.generatedTiles);
+        }
     }
 }

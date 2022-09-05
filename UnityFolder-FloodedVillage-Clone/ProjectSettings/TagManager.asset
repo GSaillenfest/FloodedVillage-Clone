@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - water
+  - sand
+  - rock
+  - seeds
+  - crops
+  - empty
   layers:
   - Default
   - TransparentFX
