@@ -25,6 +25,7 @@ public class SelectionALaSouris : MonoBehaviour
         Debug.DrawRay(mousePos.origin, mousePos.direction * 100, Color.yellow, 2f) ;
         RaycastHit2D hit = Physics2D.GetRayIntersection(mousePos);
         if (hit.collider != null) Debug.Log(hit.collider.gameObject.name);
+
     }
 
     

@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class GenerationDeGrille : MonoBehaviour
 {
-    [SerializeField] GameObject[] tilesPrefabs;
+    [SerializeField] public GameObject[] tilesPrefabs;
     [SerializeField] GameObject parent;
     [SerializeField] int width_X = 5;
     [SerializeField] int height_Y = 5;
 
-    public List<GameObject> generatedTiles = new List<GameObject>();
-
+    public List<Vector2Int> generatedTiles = new List<Vector2Int>();
+    List<Vector2Int> newGeneratedTiles = new List<Vector2Int>();
+    List<Vector2Int> toDestroyTiles = new List<Vector2Int>();
+    int[,] table = new int[100, 100];
 
     public void GenerateGrid()
     {
@@ -19,24 +21,26 @@ public class GenerationDeGrille : MonoBehaviour
         {
             for (int y = 0; y < height_Y; y++)
             {
-                GameObject spawnedTile = Instantiate(tilesPrefabs[Random.Range(0, tilesPrefabs.Length)], new Vector3(x - 0.5f, y - 0.5f), Quaternion.identity, parent.transform);
+                int randomIndex = Random.Range(0, 6);
+                table[x, y] = randomIndex;
+                GameObject spawnedTile = Instantiate(tilesPrefabs[randomIndex], new Vector3(x, y), Quaternion.identity, parent.transform);
                 spawnedTile.name = $"tile {x} {y}";
                 if (spawnedTile.CompareTag("water"))
                 {
                     //Debug.Log("water");
-                    generatedTiles.Add(spawnedTile);
+                    generatedTiles.Add(new Vector2Int(x,y));
                 }
 
             }
         }
 
-        //Debug.Log(generatedTiles.Count);
+        //Debug.Log(table[2,3]);
     }
 
     public void SupprGrid()
     {
 
-        generatedTiles = new List<GameObject>();
+        generatedTiles = new List<Vector2Int>();
 
         int childCount = parent.transform.childCount;
         for (int i = childCount; i > 0; i--)
@@ -45,41 +49,52 @@ public class GenerationDeGrille : MonoBehaviour
         }
     }
 
-    public void React(List<GameObject> list)
+    public void React(List<Vector2Int> coordonatesList)
     {
             Debug.Log("React appelé");
-            Debug.Log(list.Count);
+            Debug.Log(coordonatesList.Count);
 
-        if (list.Count == 0) return;
+        if (coordonatesList.Count == 0) return;
         else
         {
-            List<GameObject> newGeneratedTiles = new List<GameObject>();
-            List<GameObject> toDestroyTiles = new List<GameObject>();
+            newGeneratedTiles = new List<Vector2Int>();
+            toDestroyTiles = new List<Vector2Int>();
 
-            foreach (GameObject tile in list)
+            foreach (Vector2Int coordonates in coordonatesList)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector3 offSet = Vector3.zero;
+                    Vector2Int offSet = Vector2Int.zero;
                     switch (i)
                     {
                         case 0:
-                            offSet = new Vector3(1.5f, 0.5f, -1f);
+                            offSet = new Vector2Int(1 , 0);
                             break;
                         case 1:
-                            offSet = new Vector3(0.5f, 1.5f, -1f);
+                            offSet = new Vector2Int(0, 1);
                             break;
                         case 2:
-                            offSet = new Vector3(-.5f, 0.5f, -1f);
+                            offSet = new Vector2Int(-1, 0);
                             break;
                         case 3:
-                            offSet = new Vector3(0.5f, -0.5f, -1f);
+                            offSet = new Vector2Int(0, -1);
                             break;
                         default:
                             break;
                     }
 
-                    Ray ray = new Ray(tile.transform.position + offSet, Vector3.forward * 10f);
+                    Vector2Int nextTile = coordonates + offSet;
+
+                    if (table[nextTile.x,nextTile.y] == (int) TileType.empty)
+                    {
+                        table[nextTile.x, nextTile.y] = (int) TileType.water;
+                        GameObject newTile = Instantiate(tilesPrefabs[(int) TileType.water], new Vector3(nextTile.x, nextTile.y), Quaternion.identity, parent.transform);
+                        newTile.name = $"tile {nextTile.x} {nextTile.y}";
+                        newGeneratedTiles.Add(nextTile);
+                        //Supprimer le gameObject à ces coordonnées (avec ou sans raycast ?)
+                    }
+
+                    /*Ray ray = new Ray(coordonates.transform.position, Vector3.forward * 10f);
 
                     //Debug.DrawRay(tile.transform.position + offSet, Vector3.forward * 2f, Color.green, 20f, false);
                     RaycastHit hit;
@@ -107,12 +122,12 @@ public class GenerationDeGrille : MonoBehaviour
                                 break;
                             case "crops":
                                 break;
-                            case "rock":
+                            case "stone":
                                 break;
                             default:
                                 break;
                         }
-                    }
+                    }*/
 
                 }
 
@@ -121,15 +136,25 @@ public class GenerationDeGrille : MonoBehaviour
             {
             DestroyImmediate(toDestroyTiles[0]);
             }
+            StartCoroutine(Waiting());
+
+        }
+    
+        IEnumerator Waiting()
+        {
+            yield return new WaitForSeconds(0.5f);
             React(newGeneratedTiles);
         }
     }
 
+
     public enum TileType
     {
+        empty,
         sand,
         water,
-        rock,
-        seed
+        stone,
+        seed,
+        crops,
     }
 }
