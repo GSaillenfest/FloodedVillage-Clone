@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(GenerationDeGrille))]
+[CustomEditor(typeof(GridManager))]
 
 public class GenerationDeGrilleEditor : Editor
 
@@ -13,7 +13,7 @@ public class GenerationDeGrilleEditor : Editor
     {
         DrawDefaultInspector();
         
-        GenerationDeGrille generator = (GenerationDeGrille) target;
+        GridManager generator = (GridManager) target;
 
         if (GUILayout.Button("Générer une grille"))
         {
